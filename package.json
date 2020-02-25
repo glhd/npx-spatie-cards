@@ -1,0 +1,15 @@
+{
+  "name": "spatie.cards",
+  "version": "1.0.0",
+  "main": "index.js",
+  "bin": {
+    "spatie.cards": "index.js"
+  },
+  "repository": "https://github.com/glhd/npx-spatie-cards.git",
+  "author": "Chris Morrell <inxilpro@users.noreply.github.com>",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "open": "^7.0.2"
+  }
+}
