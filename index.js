@@ -19,8 +19,8 @@ async function run() {
 	const packages = await finder();
 	
 	if (null === packages || 0 === packages.length) {
-		console.log('No packages found in this directory.');
-		if (await confirm('Open spatie.cards in browser?')) {
+		console.log('No Spatie composer packages found.\n');
+		if (await confirm(`Open ${blue('spatie.cards')} in browser?`)) {
 			open('https://spatie.cards');
 		}
 		return;
@@ -32,7 +32,7 @@ async function run() {
 		return abort();
 	}
 	
-	const url = `https://spatie.cards/postcards/create?package=${ encodeURIComponent(package_name) }`;
+	const url = `https://spatie.cards/?package=${ encodeURIComponent(package_name) }`;
 	console.log(`We'll need to finish at:`);
 	console.log(blue(url));
 	console.log('');
