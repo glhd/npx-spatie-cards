@@ -1,49 +1,51 @@
 #!/usr/bin/env node
 
-var fs = require('fs');
-var open = require('open');
+const open = require('open');
+const confirm = require('./confirm.js');
+const prompt = require('./prompt.js');
+const banner = require('./banner.js');
+const finder = require('./package-finder.js');
+const { red, blue } = require('./colors.js');
 
-console.log('Looking for composer.json...');
+const abort = () => {
+	console.log(red('Cancelled.'));
+	console.log('');
+	process.exit(1);
+};
 
-function fallback() {
-	open('https://spatie.cards');
+async function run() {
+	banner();
+	
+	const packages = await finder();
+	
+	if (null === packages || 0 === packages.length) {
+		console.log('No packages found in this directory.');
+		if (await confirm('Open spatie.cards in browser?')) {
+			open('https://spatie.cards');
+		}
+		return;
+	}
+	
+	const package_name = await prompt(packages);
+	
+	if (null === package_name) {
+		return abort();
+	}
+	
+	const url = `https://spatie.cards/postcards/create?package=${ encodeURIComponent(package_name) }`;
+	console.log(`We'll need to finish at:`);
+	console.log(blue(url));
+	console.log('');
+	
+	if (await confirm(`Continue in browser?`)) {
+		console.log(`Opening browser...\n`);
+		open(url);
+		return 0;
+	}
+	
+	return abort();
 }
 
-fs.readFile('composer.json', function(err, data) {
-	if (err) {
-		console.warn(`Couldn't find a composer.json file. Redirecting to web…`);
-		return fallback();
-	}
-	
-	try {
-		var composer_json = JSON.parse(data);
-	} catch (e) {
-		console.warn(`Couldn't parse composer.json file. Redirecting to web…`);
-		return fallback();
-	}
-	
-	var package_count = 0;
-	
-	if ('require' in composer_json) {
-		Object.keys(composer_json['require']).forEach(function(package_name) {
-			if (package_name.startsWith('spatie/')) {
-				package_count++;
-				open('https://spatie.cards?package=' + encodeURIComponent(package_name));
-			}
-		});
-	}
-	
-	if ('require-dev' in composer_json) {
-		Object.keys(composer_json['require-dev']).forEach(function(package_name) {
-			if (package_name.startsWith('spatie/')) {
-				package_count++;
-				open('https://spatie.cards?package=' + encodeURIComponent(package_name));
-			}
-		});
-	}
-	
-	if (0 === package_count) {
-		console.warn(`No Spatie packages found…`);
-		return fallback();
-	}
-});
+Promise.resolve(run())
+	.then(() => process.exit(0))
+	.catch(() => process.exit(1));
